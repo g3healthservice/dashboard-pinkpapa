@@ -16,6 +16,9 @@ BUILD = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 # endpoint do Apps Script (envio real de e-mail com anexo). Vazio = fallback mailto.
 EP = BASE/"mail_endpoint.txt"
 MAIL_ENDPOINT = EP.read_text(encoding="utf-8").strip() if EP.exists() else ""
+# token (deve bater com TOKEN no AppsScript_EnvioProposta.gs)
+TK = BASE/"mail_token.txt"
+MAIL_TOKEN = TK.read_text(encoding="utf-8").strip() if TK.exists() else ""
 
 CAPITAIS = {
  'AC':'Rio Branco','AL':'Maceió','AP':'Macapá','AM':'Manaus','BA':'Salvador','CE':'Fortaleza',
@@ -353,6 +356,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 const MUNICIPIOS = __DATA__;    // [nome, uf, pop, m2564]
 const UF_STATS   = __UFSTATS__; // {uf:{pop,m,n,capital,nome}}
 const MAIL_ENDPOINT = "__MAIL_ENDPOINT__";
+const MAIL_TOKEN = "__MAIL_TOKEN__";
 const norm = s => s.normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase();
 let selected = null, lastCalc = null, escopo = 'mun';
 
@@ -872,7 +876,7 @@ async function enviarEmail(){
     const b64 = r.doc.output('datauristring').split(',')[1];
     await fetch(MAIL_ENDPOINT,{method:'POST',mode:'no-cors',
       headers:{'Content-Type':'text/plain;charset=utf-8'},
-      body:JSON.stringify({action:'enviarProposta',para:email,assunto,corpo,
+      body:JSON.stringify({action:'enviarProposta',token:MAIL_TOKEN,para:email,assunto,corpo,
         nomeArquivo:nomeArq(),pdfBase64:b64,ref:r.ref,alvo:r.alvo,
         valor:lastCalc.custoPrograma,copia:document.getElementById('in-prop-email').value.trim()})});
     st.style.color='#12A97A'; st.textContent='✅ Proposta enviada para '+email;
@@ -892,7 +896,7 @@ document.getElementById('mailNote').textContent = MAIL_ENDPOINT
 
 out = (HTML.replace("__TOTM__", TOTM_BR).replace("__BUILD__", BUILD)
        .replace("__DATA__", DATA_JS).replace("__UFSTATS__", UFSTATS_JS)
-       .replace("__MAIL_ENDPOINT__", MAIL_ENDPOINT)
+       .replace("__MAIL_ENDPOINT__", MAIL_ENDPOINT).replace("__MAIL_TOKEN__", MAIL_TOKEN)
        .replace("__CHART__", CHART).replace("__JSPDF__", JSPDF).replace("__AUTOTABLE__", AUTOTABLE))
 
 (BASE/"index.html").write_text(out, encoding="utf-8")

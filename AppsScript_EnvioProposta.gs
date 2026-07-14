@@ -9,24 +9,43 @@
  *  4. Copie a URL /exec e cole em ~/pinkpapa/mail_endpoint.txt
  *  5. Rode ~/pinkpapa/publicar.sh  (o painel passa a enviar de verdade).
  *
- * Ao alterar este arquivo, use "Gerenciar implantações" -> nova versão
- * (a URL /exec não muda).
+ * AO ATUALIZAR este arquivo: "Gerenciar implantações" -> editar (lápis)
+ * -> Versão: "Nova versão" -> Implantar. A URL /exec NÃO muda.
+ *
+ * SEGURANÇA (2 camadas):
+ *  - TOKEN: precisa bater com o token do painel. Barra quem tem só a URL
+ *    (ex.: vazou num log) mas não a página. Não é segredo forte (o painel é
+ *    estático e público), então é só a 1a camada.
+ *  - RATE LIMIT server-side (MAX_POR_HORA): proteção REAL contra abuso —
+ *    limita o total de envios por hora, independentemente de quem chame.
  */
 
-// cópia oculta fixa (opcional) — recebe todas as propostas enviadas
-var BCC_FIXO = 'g3.healthservice@proton.me';
+var TOKEN        = 'ppapa-8f3a1c92';        // deve ser IGUAL ao ~/pinkpapa/mail_token.txt
+var MAX_POR_HORA = 40;                       // teto de envios por hora (anti-abuso)
+var BCC_FIXO     = 'g3.healthservice@proton.me';  // cópia oculta de auditoria
 
 function doPost(e) {
   try {
     var p = JSON.parse(e.postData.contents);
 
     if (p.action === 'enviarProposta') {
+      // 1a camada: token
+      if (String(p.token) !== TOKEN) return _ok({ erro: 'token invalido' });
+
+      // 2a camada: rate limit por hora (bucket no CacheService)
+      var cache = CacheService.getScriptCache();
+      var bucket = 'cnt_' + Math.floor(Date.now() / 3600000);
+      var cnt = Number(cache.get(bucket) || 0);
+      if (cnt >= MAX_POR_HORA) return _ok({ erro: 'limite de envios por hora atingido' });
+      cache.put(bucket, cnt + 1, 3700);
+
+      if (!p.para) return _ok({ erro: 'destinatario vazio' });
+
       var anexo = Utilities.newBlob(
         Utilities.base64Decode(p.pdfBase64),
         'application/pdf',
         p.nomeArquivo || 'Proposta_PinkPapa.pdf'
       );
-
       var opts = {
         name: 'G3 Health Service — PinkPapa',
         attachments: [anexo],
@@ -45,11 +64,11 @@ function doPost(e) {
   }
 }
 
-/** registra o envio numa aba "Propostas" (auditoria simples) */
+/** registra o envio numa aba "Propostas" (auditoria), se o script tiver planilha */
 function _log(p) {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
-    if (!ss) return; // script standalone, sem planilha: ignora
+    if (!ss) return;
     var sh = ss.getSheetByName('Propostas');
     if (!sh) {
       sh = ss.insertSheet('Propostas');
