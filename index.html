@@ -277,7 +277,7 @@ table.cmp td.pp{background:#fff2f8;font-weight:600}
 
 <div class="wrap foot">
   <b>G3 Health Service</b> · Painel PinkPapa (PinkLab) — rastreio de câncer de colo do útero por DNA-HPV.<br>
-  Contato: g3.healthservice@proton.me · Build 2026-07-14 19:36 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
+  Contato: g3.healthservice@proton.me · Build 2026-07-14 20:04 · Dados: IBGE Censo 2022, INCA, Observatório de Oncologia, CONITEC, OMS.
 </div>
 
 <script>/*!
@@ -1079,6 +1079,48 @@ function montarPDF(){
     theme:'grid',headStyles:{fillColor:C_PINK,fontSize:9},styles:{fontSize:8.4,cellPadding:5,lineColor:[240,215,230]},
     columnStyles:{0:{cellWidth:80,fontStyle:'bold',textColor:C_WINE},2:{cellWidth:66},3:{cellWidth:88}},margin:{left:M,right:M}});
   y=doc.lastAutoTable.finalY+16;
+
+  /* ---- Cronograma (Gantt vetorial), escalado ao prazo de execução ---- */
+  (function(){
+    const gx=M, gw=W-2*M, Lp=150, tl=gx+Lp, tw=gw-Lp;
+    const nm=Math.max(1,Math.min(60,c.prazo)), colW=tw/nm;
+    const mx=(mth)=>tl+colW*mth;
+    doc.setTextColor(...C_WINE);doc.setFont('helvetica','bold');doc.setFontSize(10.5);
+    doc.text('Cronograma de execução',gx,y);
+    doc.setFont('helvetica','normal');doc.setFontSize(7);doc.setTextColor(...C_GREY);
+    doc.text('barras ajustadas a '+nm+' meses',W-M,y,{align:'right'});
+    let hy=y+12;
+    const step = nm<=12?1:(nm<=24?2:4);
+    for(let i=1;i<=nm;i++){ if(i===1||i%step===0||i===nm){ doc.text('M'+i, mx(i-0.5), hy, {align:'center'}); } }
+    const top=hy+6, rowH=16, barH=10;
+    doc.setDrawColor(240,215,230);doc.setLineWidth(0.4);
+    for(let i=0;i<=nm;i++){ doc.line(mx(i),top,mx(i),top+7*rowH); }
+    const cap=v=>Math.min(nm,v);
+    const fases=[
+      ['1 · Planejamento',C_PINK,0,cap(1),false],
+      ['2 · Capacitação',[240,57,139],0,cap(2),false],
+      ['3 · Convocação',[180,18,106],cap(1),nm,false],
+      ['4 · Autocoleta',[155,42,99],cap(1),nm,false],
+      ['5 · Análise laboratorial',C_WINE,cap(2),nm,false],
+      ['6 · Encaminhamento',[200,30,91],cap(2),nm,false],
+      ['7 · Monitoramento IA',C_GREEN,0,nm,true],
+    ];
+    fases.forEach((f,i)=>{
+      const ry=top+i*rowH;
+      doc.setTextColor(42,22,34);doc.setFont('helvetica','bold');doc.setFontSize(7.6);
+      doc.text(f[0],gx,ry+rowH/2+2.5);
+      const bx=mx(f[2]), bw=Math.max(3,mx(f[3])-mx(f[2])), by=ry+(rowH-barH)/2;
+      doc.setFillColor(...f[1]);doc.roundedRect(bx,by,bw,barH,2,2,'F');
+      if(f[4]){ const ax=mx(f[3]); doc.triangle(ax,by,ax,by+barH,ax+7,by+barH/2,'F'); }
+    });
+    // marco de início (linha tracejada)
+    doc.setDrawColor(42,22,34);doc.setLineWidth(0.8);
+    for(let dy=top; dy<top+7*rowH; dy+=4){ doc.line(tl,dy,tl,Math.min(dy+2,top+7*rowH)); }
+    doc.setLineWidth(1);
+    doc.setFont('helvetica','italic');doc.setFontSize(6.8);doc.setTextColor(...C_GREEN);
+    doc.text('» o monitoramento por IA segue por 5 anos',W-M,top+7*rowH+9,{align:'right'});
+    y=top+7*rowH+18;
+  })();
 
   doc.setFillColor(252,244,248);doc.roundedRect(M,y,W-2*M,58,6,6,'F');
   doc.setFillColor(...C_GREEN);doc.rect(M,y,4,58,'F');
