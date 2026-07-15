@@ -74,6 +74,21 @@ HTML = r"""<!DOCTYPE html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
 <title>PinkPapa · Painel de Rastreio de Câncer de Colo do Útero (DNA-HPV) — G3 Health Service</title>
+<meta name="description" content="Painel de apoio à decisão para secretarias de saúde: dimensiona a população-alvo (mulheres 25–64), o custo-benefício e as metas do rastreio de câncer de colo do útero por teste DNA-HPV (PinkPapa), por município e por estado.">
+<!-- cartão de compartilhamento (WhatsApp, e-mail, redes) -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="G3 Health Service · PinkPapa">
+<meta property="og:title" content="Rastreio de câncer de colo do útero por teste DNA-HPV — PinkPapa">
+<meta property="og:description" content="Painel por município e por estado: população-alvo (mulheres 25–64), custo-benefício frente ao tratamento oncológico e metas oficiais de rastreio. G3 Health Service.">
+<meta property="og:url" content="https://g3healthservice.github.io/rastreio-colo-utero-pinkpapa/">
+<meta property="og:image" content="https://g3healthservice.github.io/rastreio-colo-utero-pinkpapa/og.png">
+<meta property="og:image:width" content="1600">
+<meta property="og:image:height" content="840">
+<meta property="og:locale" content="pt_BR">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Rastreio de câncer de colo do útero por teste DNA-HPV — PinkPapa">
+<meta name="twitter:description" content="Painel por município e por estado: população-alvo, custo-benefício e metas de rastreio. G3 Health Service.">
+<meta name="twitter:image" content="https://g3healthservice.github.io/rastreio-colo-utero-pinkpapa/og.png">
 <style>
 :root{--pink:#E6007E;--pink2:#FF4DA6;--wine:#7C1D4F;--green:#12A97A;--red:#C81E5B;
  --ink:#2A1622;--muted:#7a6b73;--bg:#fff;--soft:#fff2f8;--line:#f1d9e6;--card:#fff;}
